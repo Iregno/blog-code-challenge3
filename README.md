@@ -90,10 +90,7 @@ The codebase prioritizes readability and maintainability. Comprehensive comments
 
 ## Development Notes
 
-- Modern JavaScript features (async/await, const/let) are used throughout
-- The codebase follows ES6+ standards
 - Comments are included for clarity and maintenance
-- Vanilla JavaScript was chosen to minimize dependencies
 
 ## Known Issues
 
