@@ -38,8 +38,8 @@ async function getAllPostsFromServer() {
             
             // make it so when you click on a post, it shows the details
             // this took me forever to figure out the first time
-            postDiv.addEventListener('click', function() {
-                showTheFullPost(singlePost.id);
+            postDiv.addEventListener('click', function(event) {
+                showTheFullPost(singlePost.id, event);
             });
             
             postsContainer.appendChild(postDiv);
@@ -53,7 +53,7 @@ async function getAllPostsFromServer() {
 }
 
 // show all the juicy details for whatever post the user clicked on
-async function showTheFullPost(postId) {
+async function showTheFullPost(postId, event) {
     try {
         // grab the full post data from our server
         const serverResponse = await fetch(`http://localhost:3000/posts/${postId}`);
@@ -178,7 +178,13 @@ function showEditForm() {
                 
                 // refresh everything so we can see the changes
                 getAllPostsFromServer();
-                showTheFullPost(currentlySelectedPost.id);
+                // refresh the selected post details after edit
+                setTimeout(() => {
+                    const selectedPostElement = document.querySelector('.blog-post.selected');
+                    if (selectedPostElement) {
+                        selectedPostElement.click();
+                    }
+                }, 100);
                 
                 alert('Sweet! Post updated successfully!');
             }
