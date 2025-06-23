@@ -1,0 +1,28 @@
+{
+  "posts": [
+    {
+      "id": 1,
+      "title": "My First Week Learning to Code",
+      "content": "So I just started learning programming and honestly its been pretty overwhelming but also exciting. JavaScript seems really powerful once you get the hang of it. I managed to make my first interactive webpage today and it felt amazing when it actually worked! Still struggling with understanding how APIs work but I'm getting there slowly.",
+      "author": "Frankline Machani"
+    },
+    {
+      "id": 2,
+      "title": "Why I Love Playing Guitar",
+      "content": "Been playing guitar for about 3 years now and I still get excited every time I learn a new song. There's something about the way music can change your mood instantly. My favorite songs to play are probably classic rock stuff - Led Zeppelin, Pink Floyd, that kind of thing. Still working on getting my barre chords cleaner but practice makes perfect right?",
+      "author": "Weeb Commander"
+    },
+    {
+      "id": 3,
+      "title": "Best Coffee Shops in Town",
+      "content": "As someone who basically lives on caffeine, I've tried pretty much every coffee shop within a 10 mile radius. Here are my top picks: Blue Bean Cafe has the best atmosphere for studying, Corner Coffee has amazing pastries (try the almond croissant!), and Java Junction makes the strongest espresso if you need that extra kick. Each place has its own vibe so it depends what you're looking for.",
+      "author": "Iregno FR"
+    },
+    {
+      "id": 4,
+      "title": "Thoughts on Remote Learning",
+      "content": "Remote learning has been such a mixed experience. On one hand I love being able to work from home and set my own schedule. On the other hand, it's way too easy to get distracted by literally everything - my phone, the fridge, that pile of laundry I should probably deal with. The hardest part is definitely staying motivated when you don't have classmates around. But I'm slowly figuring out what works for me.",
+      "author": "Hal Jordan"
+    }
+  ]
+}
