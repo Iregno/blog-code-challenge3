@@ -4,7 +4,7 @@ let allThePosts = []; // array to hold all our posts
 let isStillLoading = false; // TODO: actually use this flag lol
 
 // this function kicks everything off when the page loads
-// (honestly could probably name this better but whatever)
+// (honestly could probably name this better but it's never that serious)
 function startEverything() {
     getAllPostsFromServer();
     makeNewPostFormWork();
@@ -14,12 +14,12 @@ function startEverything() {
 // spent way too long debugging this async stuff...
 async function getAllPostsFromServer() {
     try {
-        // okay so we're fetching from localhost because that's what the assignment says
+        // okay so I'm fetching from localhost because that's what the assignment says
         const serverResponse = await fetch('http://localhost:3000/posts');
         const allPosts = await serverResponse.json();
         allThePosts = allPosts; // store them globally because why not
         
-        // find the div where all our posts will live
+        // find the div where all our posts will stay
         const postsContainer = document.getElementById('post-list'); // changed from var to const like a good programmer
         
         // wipe out whatever was there before
@@ -37,7 +37,7 @@ async function getAllPostsFromServer() {
             `;
             
             // make it so when you click on a post, it shows the details
-            // this took me forever to figure out the first time
+            // this took me longer than it should have to figure out the first time
             postDiv.addEventListener('click', function(event) {
                 showTheFullPost(singlePost.id, event);
             });
@@ -47,7 +47,7 @@ async function getAllPostsFromServer() {
         
         console.log('yay! loaded', allPosts.length, 'posts without breaking anything');
     } catch (error) {
-        console.error('ugh something went wrong loading posts:', error);
+        console.error('something went wrong loading posts:', error);
         document.getElementById('post-list').innerHTML = '<p style="color: red;">Oops! Failed to load posts. Make sure json-server is running!</p>';
     }
 }
@@ -91,7 +91,7 @@ async function showTheFullPost(postId, event) {
 }
 
 // make the new post form actually do something when you click submit
-// this was surprisingly tricky to get right...
+// this was surprisingly tricky for me to get right...
 function makeNewPostFormWork() {
     const newPostForm = document.getElementById('new-post-form');
     
@@ -111,7 +111,7 @@ function makeNewPostFormWork() {
         };
         
         try {
-            // shoot it over to our server
+            // send it over to the server
             const serverResponse = await fetch('http://localhost:3000/posts', {
                 method: 'POST',
                 headers: {
@@ -141,7 +141,7 @@ function makeNewPostFormWork() {
 // show the form where you can edit whatever post is currently selected
 // this one gave me a headache to get working properly
 function showEditForm() {
-    if (!currentlySelectedPost) return; // bail out if nothing is selected
+    if (!currentlySelectedPost) return; // give up if nothing is selected
     
     // pre-fill the form with whatever's already there
     document.getElementById('edit-title').value = currentlySelectedPost.title;
