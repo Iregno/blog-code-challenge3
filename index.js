@@ -1,218 +1,231 @@
-// keep track of which post is currently selected
-let selectedPost = null;
-let postsList = [];
-let isLoading = false; // not really using this but might be useful later
+// okay so basically we need to keep track of stuff here
+let currentlySelectedPost = null; // this will store whatever post the user clicked on
+let allThePosts = []; // array to hold all our posts
+let isStillLoading = false; // TODO: actually use this flag lol
 
-// this function runs when the page loads
-function main() {
-    loadAllPosts();
-    setupNewPostForm();
+// this function kicks everything off when the page loads
+// (honestly could probably name this better but whatever)
+function startEverything() {
+    getAllPostsFromServer();
+    makeNewPostFormWork();
 }
 
-// get posts from the server and display them
-async function loadAllPosts() {
-    try{
-        // fetch all posts from api
-        const response = await fetch('http://localhost:3000/posts');
-        const posts = await response.json();
-        postsList = posts;
+// this function grabs all posts from our fake API and shows them on screen
+// spent way too long debugging this async stuff...
+async function getAllPostsFromServer() {
+    try {
+        // okay so we're fetching from localhost because that's what the assignment says
+        const serverResponse = await fetch('http://localhost:3000/posts');
+        const allPosts = await serverResponse.json();
+        allThePosts = allPosts; // store them globally because why not
         
-        // get the container where posts will go
-        var postsContainer = document.getElementById('post-list');
+        // find the div where all our posts will live
+        const postsContainer = document.getElementById('post-list'); // changed from var to const like a good programmer
         
-        // clear out any old content
+        // wipe out whatever was there before
         postsContainer.innerHTML = '';
         
-        // loop through each post and create html for it
-        for(let i = 0; i < posts.length; i++) {
-            let post = posts[i];
-            const postElement = document.createElement('div');
-            postElement.className = 'blog-post';
-            postElement.innerHTML = `
-                <div class="post-title">${post.title}</div>
-                <div class="post-author">by ${post.author}</div>
+        // loop through each post and make it clickable
+        // using old school for loop because forEach is confusing sometimes
+        for(let i = 0; i < allPosts.length; i++) {
+            const singlePost = allPosts[i];
+            const postDiv = document.createElement('div');
+            postDiv.className = 'blog-post';
+            postDiv.innerHTML = `
+                <div class="post-title">${singlePost.title}</div>
+                <div class="post-author">by ${singlePost.author}</div>
             `;
             
-            // when someone clicks on this post, show its details
-            postElement.addEventListener('click', function() {
-                showPostDetails(post.id);
+            // make it so when you click on a post, it shows the details
+            // this took me forever to figure out the first time
+            postDiv.addEventListener('click', function() {
+                showTheFullPost(singlePost.id);
             });
             
-            postsContainer.appendChild(postElement);
+            postsContainer.appendChild(postDiv);
         }
-                
-                console.log('loaded', posts.length, 'posts successfully');
-            } catch (error) {
-                console.error('oops, couldnt load posts:', error);
-                document.getElementById('post-list').innerHTML = '<p style="color: red;">Failed to load posts. Is the server running?</p>';
-            }
-        }
+        
+        console.log('yay! loaded', allPosts.length, 'posts without breaking anything');
+    } catch (error) {
+        console.error('ugh something went wrong loading posts:', error);
+        document.getElementById('post-list').innerHTML = '<p style="color: red;">Oops! Failed to load posts. Make sure json-server is running!</p>';
+    }
+}
 
-        // show details for a specific post
-        async function showPostDetails(postId) {
-            try {
-                // get the full post data
-                const response = await fetch(`http://localhost:3000/posts/${postId}`);
-                const post = await response.json();
-                selectedPost = post;
-                
-                // show the post details
-                const detailsDiv = document.getElementById('post-detail');
-                detailsDiv.innerHTML = `
-                    <h3>${post.title}</h3>
-                    <p><strong>Author:</strong> ${post.author}</p>
-                    <div style="margin-top: 15px;">
-                        <strong>Content:</strong>
-                        <p style="margin-top: 10px; line-height: 1.5;">${post.content}</p>
-                    </div>
-                    <div class="button-group">
-                        <button onclick="showEditForm()" class="btn btn-gray">Edit Post</button>
-                        <button onclick="deleteThisPost(${post.id})" class="btn btn-red">Delete Post</button>
-                    </div>
-                `;
-                
-                // highlight the selected post in the list
-                document.querySelectorAll('.blog-post').forEach(item => {
-                    item.classList.remove('selected');
-                });
-                event.target.closest('.blog-post').classList.add('selected');
-                
-                // make sure edit form is hidden
-                document.getElementById('edit-post-form').classList.add('hide');
-                
-            } catch (error) {
-                console.error('error getting post details:', error);
-            }
-        }
-
-        // setup the form for adding new posts
-        function setupNewPostForm() {
-            const newPostForm = document.getElementById('new-post-form');
-            
-            newPostForm.addEventListener('submit', async function(e) {
-                e.preventDefault(); // dont refresh the page
-                
-                // get values from form inputs
-                const title = document.getElementById('post-title').value;
-                const content = document.getElementById('post-content').value;
-                const author = document.getElementById('post-author').value;
-                
-                // create new post object
-                const newPost = {
-                    title: title,
-                    content: content,
-                    author: author
-                };
-                
-                try {
-                    // send new post to server
-                    const response = await fetch('http://localhost:3000/posts', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(newPost)
-                    });
-                    
-                    if (response.ok) {
-                        // clear the form
-                        newPostForm.reset();
-                        
-                        // reload all posts to show the new one
-                        loadAllPosts();
-                        
-                        alert('New post created!');
-                    } else {
-                        alert('Something went wrong adding the post');
-                    }
-                } catch (error) {
-                    console.error('error adding new post:', error);
-                    alert('Couldnt add the post, please try again');
-                }
-            });
-        }
-
-        // show the edit form with current post data
-        function showEditForm() {
-            if (!selectedPost) return;
-            
-            // fill in the edit form with current data
-            document.getElementById('edit-title').value = selectedPost.title;
-            document.getElementById('edit-content').value = selectedPost.content;
-            
-            // show the edit form
-            document.getElementById('edit-post-form').classList.remove('hide');
-            
-            // handle form submission
-            const editForm = document.getElementById('edit-post-form');
-            editForm.onsubmit = async function(e) {
-                e.preventDefault();
-                
-                const updatedPost = {
-                    ...selectedPost,
-                    title: document.getElementById('edit-title').value,
-                    content: document.getElementById('edit-content').value
-                };
-                
-                try {
-                    const response = await fetch(`http://localhost:3000/posts/${selectedPost.id}`, {
-                        method: 'PATCH',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(updatedPost)
-                    });
-                    
-                    if (response.ok) {
-                        // hide the edit form
-                        editForm.classList.add('hide');
-                        
-                        // refresh everything
-                        loadAllPosts();
-                        showPostDetails(selectedPost.id);
-                        
-                        alert('Post updated successfully!');
-                    }
-                } catch (error) {
-                    console.error('error updating post:', error);
-                    alert('Failed to update post');
-                }
-            };
-        }
-
-        // cancel editing
-        document.getElementById('cancel-edit-btn').addEventListener('click', function() {
-            document.getElementById('edit-post-form').classList.add('hide');
+// show all the juicy details for whatever post the user clicked on
+async function showTheFullPost(postId) {
+    try {
+        // grab the full post data from our server
+        const serverResponse = await fetch(`http://localhost:3000/posts/${postId}`);
+        const clickedPost = await serverResponse.json();
+        currentlySelectedPost = clickedPost; // remember which one we're looking at
+        
+        // build out the HTML to show all the post info
+        const detailsSection = document.getElementById('post-detail');
+        detailsSection.innerHTML = `
+            <h3>${clickedPost.title}</h3>
+            <p><strong>Author:</strong> ${clickedPost.author}</p>
+            <div style="margin-top: 15px;">
+                <strong>Content:</strong>
+                <p style="margin-top: 10px; line-height: 1.5;">${clickedPost.content}</p>
+            </div>
+            <div class="button-group">
+                <button onclick="showEditForm()" class="btn btn-gray">Edit Post</button>
+                <button onclick="deleteThisPost(${clickedPost.id})" class="btn btn-red">Delete Post</button>
+            </div>
+        `;
+        
+        // make the clicked post look selected in the list
+        // (this part was a pain to get working right)
+        document.querySelectorAll('.blog-post').forEach(postItem => {
+            postItem.classList.remove('selected');
         });
+        event.target.closest('.blog-post').classList.add('selected');
+        
+        // hide the edit form if it's showing
+        document.getElementById('edit-post-form').classList.add('hide');
+        
+    } catch (error) {
+        console.error('ugh, something broke when trying to show post details:', error);
+    }
+}
 
-        // delete a post
-        async function deleteThisPost(postId) {
-            if (!confirm('Are you sure you want to delete this post? This cannot be undone.')) {
-                return;
-            }
+// make the new post form actually do something when you click submit
+// this was surprisingly tricky to get right...
+function makeNewPostFormWork() {
+    const newPostForm = document.getElementById('new-post-form');
+    
+    newPostForm.addEventListener('submit', async function(e) {
+        e.preventDefault(); // stop the page from refreshing like it normally would
+        
+        // grab whatever the user typed into the form fields
+        const titleText = document.getElementById('post-title').value;
+        const contentText = document.getElementById('post-content').value;
+        const authorName = document.getElementById('post-author').value;
+        
+        // put it all together into a nice object
+        const brandNewPost = {
+            title: titleText,
+            content: contentText,
+            author: authorName
+        };
+        
+        try {
+            // shoot it over to our server
+            const serverResponse = await fetch('http://localhost:3000/posts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json' // tell the server we're sending JSON
+                },
+                body: JSON.stringify(brandNewPost)
+            });
             
-            try {
-                const response = await fetch(`http://localhost:3000/posts/${postId}`, {
-                    method: 'DELETE'
-                });
+            if (serverResponse.ok) {
+                // wipe the form clean
+                newPostForm.reset();
                 
-                if (response.ok) {
-                    // clear the details view
-                    document.getElementById('post-detail').innerHTML = '<p style="color: #666; font-style: italic;">Click on a post to see details here...</p>';
-                    selectedPost = null;
-                    
-                    // refresh the posts list
-                    loadAllPosts();
-                    
-                    alert('Post deleted');
-                } else {
-                    alert('Failed to delete post');
-                }
-            } catch (error) {
-                console.error('error deleting post:', error);
-                alert('Something went wrong while deleting');
+                // refresh everything to show the new post
+                getAllPostsFromServer();
+                
+                alert('Woohoo! New post created successfully!');
+            } else {
+                alert('Hmm, something went wrong adding the post');
             }
+        } catch (error) {
+            console.error('oops, error adding new post:', error);
+            alert('Couldn\'t add the post, maybe try again?');
         }
+    });
+}
 
-        // start everything when page is ready
-        document.addEventListener('DOMContentLoaded', main);
+// show the form where you can edit whatever post is currently selected
+// this one gave me a headache to get working properly
+function showEditForm() {
+    if (!currentlySelectedPost) return; // bail out if nothing is selected
+    
+    // pre-fill the form with whatever's already there
+    document.getElementById('edit-title').value = currentlySelectedPost.title;
+    document.getElementById('edit-content').value = currentlySelectedPost.content;
+    
+    // make the edit form visible
+    document.getElementById('edit-post-form').classList.remove('hide');
+    
+    // make the form actually do something when submitted
+    const editForm = document.getElementById('edit-post-form');
+    editForm.onsubmit = async function(e) {
+        e.preventDefault(); // don't refresh the page
+        
+        // create the updated post object with new values
+        const updatedPostData = {
+            ...currentlySelectedPost, // keep everything the same...
+            title: document.getElementById('edit-title').value, // except update these
+            content: document.getElementById('edit-content').value
+        };
+        
+        try {
+            // send the update to our server
+            const serverResponse = await fetch(`http://localhost:3000/posts/${currentlySelectedPost.id}`, {
+                method: 'PATCH', // PATCH because we're just updating some fields
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedPostData)
+            });
+            
+            if (serverResponse.ok) {
+                // hide the edit form
+                editForm.classList.add('hide');
+                
+                // refresh everything so we can see the changes
+                getAllPostsFromServer();
+                showTheFullPost(currentlySelectedPost.id);
+                
+                alert('Sweet! Post updated successfully!');
+            }
+        } catch (error) {
+            console.error('dang it, error updating post:', error);
+            alert('Ugh, failed to update post. Try again maybe?');
+        }
+    };
+}
+
+// let the user cancel out of editing mode
+// probably should have made this a proper function but whatever
+document.getElementById('cancel-edit-btn').addEventListener('click', function() {
+    document.getElementById('edit-post-form').classList.add('hide');
+});
+
+// this function nukes a post from existence
+// added a confirmation dialog because accidentally deleting stuff sucks
+async function deleteThisPost(postId) {
+    if (!confirm('Are you REALLY sure you want to delete this post? This cannot be undone!')) {
+        return; // user chickened out
+    }
+    
+    try {
+        // tell the server to delete this post
+        const serverResponse = await fetch(`http://localhost:3000/posts/${postId}`, {
+            method: 'DELETE' // bye bye post
+        });
+        
+        if (serverResponse.ok) {
+            // clear out the details area
+            document.getElementById('post-detail').innerHTML = '<p style="color: #666; font-style: italic;">Click on a post to see details here...</p>';
+            currentlySelectedPost = null; // nothing selected anymore
+            
+            // refresh the list so the deleted post disappears
+            getAllPostsFromServer();
+            
+            alert('Post deleted successfully! (kinda sad but oh well)');
+        } else {
+            alert('Hmm, failed to delete post for some reason');
+        }
+    } catch (error) {
+        console.error('something went wrong while trying to delete:', error);
+        alert('Oops! Something went wrong while deleting');
+    }
+}
+
+// kick off everything when the page finishes loading
+// using DOMContentLoaded because it's more reliable than window.onload
+document.addEventListener('DOMContentLoaded', startEverything);
