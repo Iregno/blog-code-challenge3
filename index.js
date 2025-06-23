@@ -201,7 +201,7 @@ document.getElementById('cancel-edit-btn').addEventListener('click', function() 
     document.getElementById('edit-post-form').classList.add('hide');
 });
 
-// this function nukes a post from existence
+// this function erases a post from existence
 // added a confirmation dialog because accidentally deleting stuff sucks
 async function deleteThisPost(postId) {
     if (!confirm('Are you REALLY sure you want to delete this post? This cannot be undone!')) {
@@ -233,5 +233,5 @@ async function deleteThisPost(postId) {
 }
 
 // kick off everything when the page finishes loading
-// using DOMContentLoaded because it's more reliable than window.onload
+// using DOMContentLoaded 
 document.addEventListener('DOMContentLoaded', startEverything);
